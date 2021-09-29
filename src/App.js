@@ -1,7 +1,8 @@
+import {Formulario} from './components/Formulario';
 function App() {
   return (
     <>
-    <p>HELLO WORLD</p>
+    <Formulario/>
     </>
 
   );
