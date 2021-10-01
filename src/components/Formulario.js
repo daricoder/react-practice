@@ -190,7 +190,8 @@ export const Formulario = () => {
                     )
                   : []
               }
-              multiple
+              multiple  
+              // select multiple en el handlechange no te da el valor actual te da siempre el mas proximo al index 0 del los options entonces jamas tendras que mismo seleccionaste o desceleccionaste asi que toca recurrir a DOM de javascript y sacar los options seleccionados de e.target
               onChange={handleChange}
               name="idiomas"
             >
