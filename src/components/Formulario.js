@@ -2,7 +2,15 @@ import { useState } from "react";
 import "./Formulario.css";
 
 export const Formulario = () => {
-  const params =[ "nombre","email","edad","sexo","pais","redes_sociales","idiomas"]
+  const params = [
+    "nombre",
+    "email",
+    "edad",
+    "sexo",
+    "pais",
+    "redes_sociales",
+    "idiomas",
+  ];
   const [formData, setFormData] = useState({});
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -10,15 +18,16 @@ export const Formulario = () => {
   const validateFormData = () => {
     for (const param of params) {
       if (!formData[param]) {
-        return false
+        return false;
       }
     }
-    return true
-  }
+    return true;
+  };
 
   const handleChange = (e) => {
-    let { name, value, type, options } = e.target;
-    // console.log(name, value, type,Object.values(value));
+    let { name, value, type, options, multiple, selectedIndex } = e.target;
+    // console.log(name, value, type, Object.values(value), typeof value);
+    // console.log("multiple",multiple,selectedIndex,options,typeof options,Object.values(options))
 
     if (type === "checkbox" && name === "redes_sociales") {
       if (!formData?.redes_sociales) {
@@ -33,49 +42,41 @@ export const Formulario = () => {
         value = undefined;
       }
     } else if (type === "select-multiple" && name === "idiomas") {
-      if (options) {
-        let values = [];
-        for (var i = 0, l = options.length; i < l; i++) {
-          if (options[i].selected) {
-            values = [...values, options[i].value];
-          }
-        }
-
-        let idiomas = formData[name];
-        value = [];
-        if (idiomas) {
-          let idiomaEncontrado;
-          for (const idioma of values) {
-            idiomaEncontrado = idiomas.find(
-              (idiomaObj) => idiomaObj.idioma === idioma
+      let selectedOptions = Object.values(options).filter(
+        (option) => option.selected
+      );
+      if (selectedOptions.length > 0) {
+        if (formData[name]) {
+          value = selectedOptions.map((option) => {
+            const interseccionObj = formData[name].find(
+              (optionObj) =>
+                optionObj.idioma === JSON.parse(option.value).idioma
             );
-            if (idiomaEncontrado) {
-              value = [...value, idiomaEncontrado];
-            } else {
-              value = [...value, { idioma: idioma, nivel: 5 }];
+            if (interseccionObj) {
+              return interseccionObj;
             }
-          }
+            return JSON.parse(option.value);
+          });
         } else {
-          for (const idioma of values) {
-            value = [...value, { idioma: idioma, nivel: 5 }];
-          }
+          value = selectedOptions.map((option) => {
+            return JSON.parse(option.value);
+          });
         }
-        if (!values.length) {
-          value = undefined;
-        }
+      } else {
+        value = undefined;
       }
     } else if (type === "range" && name === "nivel") {
-      let idiomaTarget = e.target.getAttribute("data-idioma")
-      let idiomaObj = formData.idiomas.find((idiomaObj)=> idiomaObj.idioma === idiomaTarget);
-      idiomaObj[name]=value;
-      value=undefined;
-
+      let idiomaTarget = e.target.getAttribute("data-idioma");
+      let idiomaObj = formData.idiomas.find(
+        (idiomaObj) => idiomaObj.idioma === idiomaTarget
+      );
+      idiomaObj[name] = value;
+      value = undefined;
     }
     setFormData({
       ...formData,
       [name]: type == "number" ? Number(value) : value,
     });
-
   };
 
   const sexos = ["Masculino", "Femenino"];
@@ -181,10 +182,23 @@ export const Formulario = () => {
               <strong>Idiomas</strong>{" "}
             </span>
             <br />
-            <select multiple onChange={handleChange} name="idiomas">
+            <select
+              value={
+                formData.idiomas
+                  ? formData.idiomas.map((idiomaObj) =>
+                      JSON.stringify(idiomaObj)
+                    )
+                  : []
+              }
+              multiple
+              onChange={handleChange}
+              name="idiomas"
+            >
               {/* <option hidden selected></option> */}
               {idiomas.map((idioma, i) => (
-                <option key={i} value={idioma}>{idioma}</option>
+                <option key={i} value={JSON.stringify({ idioma, nivel: 4 })}>
+                  {idioma}
+                </option>
               ))}
             </select>
           </label>
@@ -196,7 +210,7 @@ export const Formulario = () => {
             </span>
             <br />
             {formData.idiomas &&
-              formData.idiomas.map((idiomaObj,i) => (
+              formData.idiomas.map((idiomaObj, i) => (
                 <div key={i}>
                   <span>Idioma:{idiomaObj.idioma}</span>
                   <br />
@@ -217,7 +231,9 @@ export const Formulario = () => {
           </label>
           <br />
 
-          <button disabled={!validateFormData()} type="submit">Enviar</button>
+          <button disabled={!validateFormData()} type="submit">
+            Enviar
+          </button>
         </form>
         <p>formData: {JSON.stringify(formData)}</p>
       </div>
